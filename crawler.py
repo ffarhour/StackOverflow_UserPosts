@@ -8,9 +8,6 @@ from lxml import etree
 import requests
 import os.path, sys
 
-global g_xml_namespace
-g_xml_namespace = "http://www.w3.org/XML/1998/namespace"
-
 class bcolors:
     """Used to implement ANSI colors without the need to remember the numbers.
     Does not contain any methods. Only contains variables.
@@ -67,24 +64,34 @@ def main(argv):
     progress_count = 0
 
     #get all user answers
-    user_answers = []
-    max_page = 2;
+    user_posts = []
+    max_page = 1;
     page = 1;
     while(page<max_page+1):
         username_url_tree = getHtml(username_url + "?tab=answers&sort=newest&page="+str(page))
         if(1==page):
             max_page = len(username_url_tree.xpath(".//div[@class='user-tab-footer']//div[@class='pager fr']//a"))
-        user_answers = user_answers + username_url_tree.xpath(".//div[@class='user-answers']//div[@class='answer-link']//a/@href")
+        user_posts = user_posts + username_url_tree.xpath(".//div[@class='user-answers']//div[@class='answer-link']//a/@href")
         page = page + 1
 
-    #print(user_answers)
-    print(bcolors.OKGREEN + "Number of answers posted by " + str(username_url.rsplit('/', 1)[-1]) + " = " + str(len(user_answers)) + bcolors.ENDC)
+    #get all user questions
+    max_page = 1;
+    page = 1;
+    while(page<max_page+1):
+        username_url_tree = getHtml(username_url + "?tab=questions&sort=newest&page="+str(page))
+        if(1==page):
+            max_page = len(username_url_tree.xpath(".//div[@class='user-tab-footer']//div[@class='pager fr']//a"))
+        user_posts = user_posts + username_url_tree.xpath(".//div[@class='user-questions']//div[@class='question-summary narrow']//a[@class='question-hyperlink']/@href")
+        page = page + 1
 
-    #filter answers if they contain "vulnerab"
+    #print(user_posts)
+    print(bcolors.OKGREEN + "Number of posts (questions+answers) by " + str(username_url.rsplit('/', 1)[-1]) + " = " + str(len(user_posts)) + bcolors.ENDC)
+
+    #filter posts if they contain "vulnerab"
     answers_with_word = []
     print(bcolors.UNDERLINE + "Progress" + bcolors.ENDC)
-    for link in user_answers:
-        sys.stdout.write("\r{0:.2f}".format((float(progress_count)/len(user_answers))*100) + "%")
+    for link in user_posts:
+        sys.stdout.write("\r{0:.2f}".format((float(progress_count)/len(user_posts))*100) + "%")
         sys.stdout.flush()
         word = "vulnerab"
         #print(link)
