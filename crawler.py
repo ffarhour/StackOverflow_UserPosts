@@ -109,7 +109,7 @@ def main(argv):
     links_string = ""
     for link in answers_with_word:
         links_string = links_string + link + "\n"
-    saveToFile(links_string,username+"_answers")
+    saveToFile(links_string,username+"_posts")
 
 
 
